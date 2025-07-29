@@ -1,0 +1,13 @@
+# Copy this content to a file named .env and replace with your actual values
+
+# Gemini API Key
+GEMINI_API_KEY=your_actual_api_key_here
+
+# MongoDB Configuration
+MONGO_URI=mongodb://localhost:27017/
+MONGO_USERNAME=your_mongodb_username
+MONGO_PASSWORD=your_mongodb_password
+MONGO_DATABASE=lovelush_db
+
+# Backend API Configuration
+API_BASE_URL=http://localhost:8000 
