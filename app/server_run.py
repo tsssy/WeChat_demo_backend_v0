@@ -25,6 +25,7 @@ from app.services.https.MatchManager import MatchManager
 from app.services.https.ChatroomManager import ChatroomManager
 from app.services.https.N8nWebhookManager import N8nWebhookManager
 from app.services.https.DataIntegrity import DataIntegrity
+from app.services.https.AIResponseProcessor import AIResponseProcessor
 
 logger = MyLogger("server")
 
@@ -94,6 +95,17 @@ async def auto_save_to_database():
             except Exception as e:
                 logger.error(f"❌ ChatroomManager数据保存失败: {e}")
             
+            # 保存AIResponseProcessor数据
+            try:
+                ai_processor = AIResponseProcessor()
+                ai_save_success = await ai_processor.save_to_database()  # 保存AI聊天数据到数据库
+                if ai_save_success:
+                    logger.info("✅ AIResponseProcessor数据保存成功")
+                else:
+                    logger.warning("⚠️ AIResponseProcessor数据保存部分失败")
+            except Exception as e:
+                logger.error(f"❌ AIResponseProcessor数据保存失败: {e}")
+            
             elapsed_time = time.time() - start_time
             logger.info(f"🔄 自动保存完成，耗时: {elapsed_time:.3f}秒")
             
@@ -146,6 +158,12 @@ async def lifespan(app: FastAPI):
         n8n_webhook_manager = N8nWebhookManager()
         logger.info("N8nWebhookManager初始化完成")
         
+        # 初始化AIResponseProcessor
+        logger.info("正在初始化AIResponseProcessor...")
+        ai_processor = AIResponseProcessor()
+        await ai_processor.initialize_from_database()  # 从数据库加载数据到内存
+        logger.info("AIResponseProcessor初始化完成")
+        
         # 启动自动保存任务
         logger.info("正在启动自动保存后台任务...")
         auto_save_task = asyncio.create_task(auto_save_to_database())
@@ -183,6 +201,10 @@ async def lifespan(app: FastAPI):
         chatroom_manager = ChatroomManager()
         await chatroom_manager.save_chatroom_history()
         logger.info("最终聊天室数据保存完成")
+        
+        ai_processor = AIResponseProcessor()
+        await ai_processor.save_to_database()
+        logger.info("最终AI聊天数据保存完成")
     except Exception as e:
         logger.error(f"最终数据保存失败: {e}")
     
