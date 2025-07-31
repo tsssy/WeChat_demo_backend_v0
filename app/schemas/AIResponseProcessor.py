@@ -28,5 +28,5 @@ class ChatResponse(BaseModel):
     """AI聊天响应模型"""
     status: str = Field(..., description="响应状态")
     response: Optional[str] = Field(None, description="AI回复内容")
-    summary: Optional[dict] = Field(None, description="总结信息")
+    summary: Optional[str] = Field(None, description="总结信息")
     error: Optional[str] = Field(None, description="错误信息") 

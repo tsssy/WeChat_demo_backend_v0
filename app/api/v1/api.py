@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from app.api.v1 import UserManagement, MatchManager, ChatroomManager
-from app.api.v1 import AIResponseProcessor
+from app.api.v1.AIResponseProcessor import router as AIResponseProcessor_router
 
 api_router = APIRouter()
 
@@ -14,4 +14,4 @@ api_router.include_router(MatchManager.router, prefix="/MatchManager", tags=["ma
 api_router.include_router(ChatroomManager.router, prefix="/ChatroomManager", tags=["chatrooms"]) 
 
 # 注册AI聊天相关路由
-api_router.include_router(AIResponseProcessor.router, tags=["ai_chat"]) 
+api_router.include_router(AIResponseProcessor_router) 

@@ -123,5 +123,7 @@ async def handle_ai_chat(
         logger.error(f"[{user_id}] 处理AI聊天请求时发生未捕获异常: {str(e)}", exc_info=True)
         return ChatResponse(
             status="error",
+            response="",
+            summary="",
             error=f"处理聊天请求失败: {str(e)}"
         ) 
