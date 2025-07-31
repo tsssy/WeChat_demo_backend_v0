@@ -34,20 +34,20 @@ class MyLogger:
         # 统一的日志格式
         return logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-    def info(self, message):
-        self.logger.info(message)
+    def info(self, message, *args, **kwargs):
+        self.logger.info(message, *args, **kwargs)
 
-    def warning(self, message):
-        self.logger.warning(message)
+    def warning(self, message, *args, **kwargs):
+        self.logger.warning(message, *args, **kwargs)
 
-    def error(self, message):
-        self.logger.error(message)
+    def error(self, message, *args, **kwargs):
+        self.logger.error(message, *args, **kwargs)
 
-    def debug(self, message):
-        self.logger.debug(message)
+    def debug(self, message, *args, **kwargs):
+        self.logger.debug(message, *args, **kwargs)
 
-    def critical(self, message):
-        self.logger.critical(message)
+    def critical(self, message, *args, **kwargs):
+        self.logger.critical(message, *args, **kwargs)
 
 
 # 示例用法 (仅供测试)

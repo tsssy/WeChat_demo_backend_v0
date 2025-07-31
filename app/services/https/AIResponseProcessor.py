@@ -12,7 +12,7 @@ class AIResponseProcessor:
     _instance = None
     _initialized = False
     
-    def __new__(cls):
+    def __new__(cls, *args, **kwargs):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._instance.ai_chatrooms = {}  # user_id -> ai_message_id列表
@@ -101,15 +101,16 @@ class AIResponseProcessor:
             List[Tuple[str, str, int, str]]: 聊天历史列表
             格式: (消息内容, ISO时间字符串, 发送者ID, 显示名称)
         """
+        logger.info(f"[{user_id}] 开始从内存中获取对话历史")
         try:
             # 1. 从内存中获取用户的AI聊天室数据
             if user_id not in self.ai_chatrooms:
-                logger.info(f"用户 {user_id} 在内存中没有AI聊天记录")
+                logger.info(f"[{user_id}] 用户 {user_id} 在内存中没有AI聊天记录")
                 return []
             
             ai_message_ids = self.ai_chatrooms[user_id]
             if not ai_message_ids:
-                logger.info(f"用户 {user_id} 在内存中的AI聊天记录为空")
+                logger.info(f"[{user_id}] 用户 {user_id} 在内存中的AI聊天记录为空")
                 return []
             
             # 2. 从内存中获取消息详情
@@ -144,7 +145,7 @@ class AIResponseProcessor:
                 
                 history.append((content, time_str, sender_id, display_name))
             
-            logger.info(f"成功从内存获取用户 {user_id} 的AI聊天历史，共 {len(history)} 条记录")
+            logger.info(f"[{user_id}] 成功从内存获取到 {len(history)} 条历史记录")
             return history
             
         except Exception as e:
@@ -153,7 +154,7 @@ class AIResponseProcessor:
     
     async def save_conversation_history(self, user_id: int, message: str, response: str) -> bool:
         """
-        保存对话历史记录到内存
+        保存用户和AI的对话历史 - 先写内存，后异步写数据库
         
         Args:
             user_id: 用户ID
@@ -161,50 +162,63 @@ class AIResponseProcessor:
             response: AI响应
             
         Returns:
-            bool: 是否保存成功
+            bool: 是否成功
         """
         try:
-            # 确保计数器已初始化
-            if not AIResponseProcessor._initialized:
-                await self.initialize_counter()
+            logger.info(f"[{user_id}] 开始保存对话历史到内存和数据库")
+            now_utc = datetime.utcnow()
             
-            # 确保用户聊天室存在
-            if user_id not in self.ai_chatrooms:
-                self.ai_chatrooms[user_id] = []
-            
-            # 生成消息ID
+            # 1. 保存用户消息
             self.message_counter += 1
             user_message_id = self.message_counter
-            
-            self.message_counter += 1
-            ai_message_id = self.message_counter
-            
-            # 保存用户消息到内存
             user_message_data = {
+                "_id": user_message_id,
                 "ai_message_id": user_message_id,
                 "ai_message_content": message,
-                "ai_message_send_time_in_utc": datetime.now(),
-                "role": 0  # 用户消息
+                "ai_message_send_time_in_utc": now_utc.isoformat(),
+                "role": 0  # 0表示用户
             }
-            self.ai_messages[user_message_id] = user_message_data
+            logger.debug(f"[{user_id}] 创建用户消息, ID: {user_message_id}")
             
-            # 保存AI消息到内存
+            # 2. 保存AI响应
+            self.message_counter += 1
+            ai_message_id = self.message_counter
             ai_message_data = {
+                "_id": ai_message_id,
                 "ai_message_id": ai_message_id,
                 "ai_message_content": response,
-                "ai_message_send_time_in_utc": datetime.now(),
-                "role": 1  # AI消息
+                "ai_message_send_time_in_utc": now_utc.isoformat(),
+                "role": 1  # 1表示AI
             }
-            self.ai_messages[ai_message_id] = ai_message_data
+            logger.debug(f"[{user_id}] 创建AI消息, ID: {ai_message_id}")
+
+            # 3. 更新内存缓存
+            # 使用 self.add_message_to_memory 方法来原子性地更新内存
+            self.add_message_to_memory(user_id, user_message_id, user_message_data)
+            self.add_message_to_memory(user_id, ai_message_id, ai_message_data)
+            logger.info(f"[{user_id}] 成功更新内存缓存，新增消息IDs: {user_message_id}, {ai_message_id}")
+
+            # 4. 异步写入数据库 (不阻塞主流程)
+            try:
+                logger.info(f"[{user_id}] 开始异步写入数据库...")
+                await Database.insert_one("AI_message", user_message_data)
+                await Database.insert_one("AI_message", ai_message_data)
+                
+                # 更新AI_chatroom表
+                await Database.update_one(
+                    "AI_chatroom",
+                    {"user_id": user_id},
+                    {"$push": {"ai_message_ids": {"$each": [user_message_id, ai_message_id]}}},
+                    upsert=True
+                )
+                logger.info(f"[{user_id}] 异步写入数据库成功")
+            except Exception as db_e:
+                logger.error(f"[{user_id}] 异步写入数据库失败: {db_e}", exc_info=True)
             
-            # 添加消息ID到聊天室
-            self.ai_chatrooms[user_id].extend([user_message_id, ai_message_id])
-            
-            logger.info(f"成功保存用户 {user_id} 的对话历史到内存，消息ID: {user_message_id}, {ai_message_id}")
             return True
             
         except Exception as e:
-            logger.error(f"保存用户 {user_id} 的对话历史失败: {str(e)}")
+            logger.error(f"[{user_id}] 保存对话历史记录失败: {e}", exc_info=True)
             return False
     
     async def check_conversation_end(self, response: str) -> bool:
