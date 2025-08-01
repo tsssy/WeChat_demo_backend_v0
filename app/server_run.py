@@ -219,6 +219,10 @@ app = FastAPI(
     description="New LoveLush User Service API",
     version=settings.VERSION,
     lifespan=lifespan,
+    # 本地测试时，将 docs_url 和 redoc_url 设置为绝对路径
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
     openapi_tags=[
         {
             "name": "users",
@@ -396,11 +400,21 @@ async def root():
 if __name__ == "__main__":
     logger.info(f"启动服务器: {settings.PROJECT_NAME} v{settings.VERSION}")
     
+    # 生产环境配置
+    # uvicorn_config = {
+    #     "app": "app.server_run:app",
+    #     "host": "0.0.0.0",
+    #     "port": 8000,
+    #     "reload": False,
+    #     "workers": 1
+    # }
+
+    # 本地测试配置
     uvicorn_config = {
         "app": "app.server_run:app",
-        "host": "0.0.0.0",
-        "port": 8000,
-        "reload": False,
+        "host": "127.0.0.1",
+        "port": 8001,
+        "reload": True,
         "workers": 1
     }
     
