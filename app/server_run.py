@@ -401,22 +401,22 @@ if __name__ == "__main__":
     logger.info(f"启动服务器: {settings.PROJECT_NAME} v{settings.VERSION}")
     
     # 生产环境配置
-    # uvicorn_config = {
-    #     "app": "app.server_run:app",
-    #     "host": "0.0.0.0",
-    #     "port": 8000,
-    #     "reload": False,
-    #     "workers": 1
-    # }
-
-    # 本地测试配置
     uvicorn_config = {
         "app": "app.server_run:app",
-        "host": "127.0.0.1",
-        "port": 8001,
-        "reload": True,
+        "host": "0.0.0.0",
+        "port": 8000,
+        "reload": False,
         "workers": 1
     }
+
+    # 本地测试配置
+    # uvicorn_config = {
+    #     "app": "app.server_run:app",
+    #     "host": "127.0.0.1",
+    #     "port": 8001,
+    #     "reload": True,
+    #     "workers": 1
+    # }
     
     try:
         uvicorn.run(**uvicorn_config)
