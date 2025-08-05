@@ -20,7 +20,7 @@ logger = MyLogger("PersonalityTest")
 # 创建路由器 - 抽卡游戏专用路由
 router = APIRouter(
     prefix="/CardGame",
-    tags=["Card Game", "抽卡游戏", "性格测试"],
+    tags=["性格测试"],
     responses={
         400: {"description": "请求参数错误"},
         404: {"description": "资源不存在"},
