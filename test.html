@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API测试页面</title>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>WeChat Demo Backend API 测试页面</h1>
+    
+    <div class="test-section">
+        <h2>🌐 连接测试</h2>
+        <button onclick="testConnection()">测试API连接</button>
+        <div id="connection-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📖 Swagger文档测试</h2>
+        <button onclick="testSwagger()">测试Swagger文档</button>
+        <div id="swagger-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 性格测试API测试</h2>
+        <button onclick="testPersonalityAPI()">测试性格测试API</button>
+        <div id="personality-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>👥 用户管理API测试</h2>
+        <button onclick="testUserAPI()">测试用户管理API</button>
+        <div id="user-result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://59.110.30.211';
+        
+        async function makeRequest(endpoint, method = 'GET', data = null) {
+            try {
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                };
+                
+                if (data) {
+                    options.body = JSON.stringify(data);
+                }
+                
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const result = await response.json();
+                
+                return {
+                    status: response.status,
+                    success: response.ok,
+                    data: result
+                };
+            } catch (error) {
+                return {
+                    status: 0,
+                    success: false,
+                    data: { error: error.message }
+                };
+            }
+        }
+
+        function displayResult(elementId, result, title) {
+            const element = document.getElementById(elementId);
+            const statusClass = result.success ? 'success' : 'error';
+            const statusText = result.success ? '✅ 成功' : '❌ 失败';
+            
+            element.innerHTML = `
+                <h3>${title}</h3>
+                <div class="${statusClass}">
+                    <strong>状态: ${statusText} (${result.status})</strong>
+                </div>
+                <pre>${JSON.stringify(result.data, null, 2)}</pre>
+            `;
+        }
+
+        async function testConnection() {
+            const result = await makeRequest('/');
+            displayResult('connection-result', result, 'API根路径测试');
+        }
+
+        async function testSwagger() {
+            try {
+                const response = await fetch(`${API_BASE}/docs`);
+                const result = {
+                    status: response.status,
+                    success: response.ok,
+                    data: { 
+                        status: response.status,
+                        contentType: response.headers.get('content-type'),
+                        message: response.ok ? 'Swagger页面可访问' : 'Swagger页面访问失败'
+                    }
+                };
+                displayResult('swagger-result', result, 'Swagger文档测试');
+            } catch (error) {
+                displayResult('swagger-result', {
+                    status: 0,
+                    success: false,
+                    data: { error: error.message }
+                }, 'Swagger文档测试');
+            }
+        }
+
+        async function testPersonalityAPI() {
+            const testData = {
+                user_id: 12345
+            };
+            const result = await makeRequest('/api/v1/CardGame/start', 'POST', testData);
+            displayResult('personality-result', result, '性格测试API测试');
+        }
+
+        async function testUserAPI() {
+            const testData = {
+                telegram_user_name: "test_user",
+                telegram_user_id: 123456789,
+                gender: 1
+            };
+            const result = await makeRequest('/api/v1/UserManagement/create_new_user', 'POST', testData);
+            displayResult('user-result', result, '用户管理API测试');
+        }
+
+        // 页面加载时自动测试连接
+        window.onload = function() {
+            testConnection();
+        };
+    </script>
+</body>
+</html> 
