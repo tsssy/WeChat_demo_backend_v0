@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.schemas.AIResponseProcessor import GetAIHistoryRequest, GetAIHistoryResponse, ChatRequest, ChatResponse
 from app.services.https.AIResponseProcessor import AIResponseProcessor
+from app.config import settings
 from app.services.https.KimiInteractionAPI import KimiInteractionAPI
+from app.services.https.GeminiInteractionAPI import GeminiInteractionAPI
 from app.utils.my_logger import MyLogger
 import time
 
@@ -14,6 +16,12 @@ def get_ai_processor():
     return AIResponseProcessor()
 
 def get_ai_interaction():
+    """根据配置动态选择AI交互服务（kimi/gemini）"""
+    # 根据配置切换服务，默认已在 config 设置为 gemini
+    service_name = settings.CURRENT_AI_SERVICE.lower().strip()
+    if service_name == "gemini":
+        return GeminiInteractionAPI()
+    # 兼容其他值或默认
     return KimiInteractionAPI()
 
 @router.post("/history")
@@ -60,7 +68,7 @@ async def get_ai_chat_history(
 @router.post("/chat")
 async def handle_ai_chat(
     request: ChatRequest,
-    ai_interaction: KimiInteractionAPI = Depends(get_ai_interaction),
+    ai_interaction = Depends(get_ai_interaction),
     ai_processor: AIResponseProcessor = Depends(get_ai_processor)
 ) -> ChatResponse:
     """
@@ -75,7 +83,7 @@ async def handle_ai_chat(
         logger.info(f"[{user_id}] 步骤 1/4: 获取到 {len(history)} 条历史记录")
         
         # 2. 发送到AI并获取响应
-        logger.info(f"[{user_id}] 步骤 2/4: 开始调用KimiInteractionAPI.send_message_to_ai...")
+        logger.info(f"[{user_id}] 步骤 2/4: 开始调用AI交互服务 send_message_to_ai...")
         start_time = time.time()
         response = await ai_interaction.send_message_to_ai(
             user_id=user_id,

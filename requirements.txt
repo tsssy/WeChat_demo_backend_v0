@@ -1,9 +1,51 @@
-fastapi
-uvicorn[standard]
-python-dotenv
-motor
-pymongo
-pydantic
-python-jose
-aiohttp 
-httpx
+# 核心Web框架和服务器
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+
+# 环境配置和工具
+python-dotenv>=1.0.0
+
+# 数据库相关
+motor>=3.3.0
+pymongo>=4.6.0
+
+# 数据验证和序列化
+pydantic>=2.5.0
+
+# 认证和安全
+python-jose[cryptography]>=3.3.0
+
+# HTTP客户端和请求
+aiohttp>=3.9.0
+httpx>=0.25.0
+requests>=2.31.0
+
+# 语音转文字功能依赖
+openai-whisper>=20231117
+pydub>=0.25.1
+python-multipart>=0.0.6
+
+# 日志和系统工具
+# 注意：以下包通常是Python标准库的一部分，但为了明确性列出：
+# - logging (标准库)
+# - pathlib (标准库)
+# - typing (标准库)
+# - datetime (标准库)
+# - json (标准库)
+# - os (标准库)
+# - sys (标准库)
+# - tempfile (标准库)
+# - asyncio (标准库)
+# - ssl (标准库)
+
+# 可选：如果需要GPU加速（CUDA环境）
+# torch>=2.1.0
+# torchaudio>=2.1.0
+
+# 可选：如果需要额外的音频处理功能
+# librosa>=0.10.0
+# soundfile>=0.12.0
+
+# 可选：如果需要更好的性能
+# ujson>=5.8.0  # 更快的JSON处理
+# orjson>=3.9.0  # 最快的JSON处理

@@ -14,19 +14,20 @@ class Settings:
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
 
-    # MongoDB配置
-    MONGODB_URL: str = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
-    MONGODB_DB_NAME: str = os.getenv("MONGODB_DB_NAME", "wechat_demo")
-    MONGODB_USERNAME: str = os.getenv("MONGODB_USERNAME", "root")
-    MONGODB_PASSWORD: str = os.getenv("MONGODB_PASSWORD", "Awr20020311")
-    MONGODB_AUTH_SOURCE: str = os.getenv("MONGODB_AUTH_SOURCE", "admin")
+    ## MongoDB配置
+    # MONGODB_URL: str = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
+    # MONGODB_DB_NAME: str = os.getenv("MONGODB_DB_NAME", "wechat_demo")
+    # MONGODB_USERNAME: str = os.getenv("MONGODB_USERNAME", "root")
+    # MONGODB_PASSWORD: str = os.getenv("MONGODB_PASSWORD", "Awr20020311")
+    # MONGODB_AUTH_SOURCE: str = os.getenv("MONGODB_AUTH_SOURCE", "admin")
 
-    # 本地测试数据库
-    # MONGODB_URL: str = "mongodb://localhost:27017"
-    # MONGODB_DB_NAME: str = "local_test_db"
-    # MONGODB_USERNAME: str = ""
-    # MONGODB_PASSWORD: str = ""
-    # MONGODB_AUTH_SOURCE: str = ""
+    # 本地测试数据库（无账号密码）——取消注释即可在本地优先生效
+    # 说明：由于这些字段在类体内后出现，会覆盖上方的默认值
+    MONGODB_URL: str = "mongodb://localhost:27017"
+    MONGODB_DB_NAME: str = "local_test_db"
+    MONGODB_USERNAME: str = ""
+    MONGODB_PASSWORD: str = ""
+    MONGODB_AUTH_SOURCE: str = ""
 
     # JWT配置 (为了保持结构完整性，即使当前未使用)
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key")
@@ -40,17 +41,26 @@ class Settings:
     DOUBAO_MODEL_NAME: str = os.getenv("DOUBAO_MODEL_NAME", "doubao-seed-1.6-250615")
     
     # Gemini API配置
-    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "AIzaSyC3H7E-QNYloxM7jHcLcL9FHEYhqvhoF5M")
     GEMINI_API_URL: str = os.getenv("GEMINI_API_URL", "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent")
     GEMINI_MODEL_NAME: str = os.getenv("GEMINI_MODEL_NAME", "gemini-2.5-flash")
     
-    # Moonshot API配置（当前使用）
+    # Moonshot API配置（保留可用，不注释）
     KIMI_API_KEY: str = os.getenv("KIMI_API_KEY", "sk-k6FqWbmEJJa9TKxK39fjCEflSG7JraFGlK2BnhAYcaHi89PJ")
     KIMI_API_URL: str = os.getenv("KIMI_API_URL", "https://api.moonshot.cn/v1/chat/completions")
     KIMI_MODEL_NAME: str = os.getenv("KIMI_MODEL_NAME", "moonshot-v1-8k")
     
-    # 当前使用的AI服务（可以切换）
-    CURRENT_AI_SERVICE: str = os.getenv("CURRENT_AI_SERVICE", "kimi")  # "kimi", "gemini" 或 "doubao"
+    # 语音转文字配置
+    WHISPER_MODEL_SIZE: str = os.getenv("WHISPER_MODEL_SIZE", "base")  # tiny, base, small, medium, large
+    WHISPER_DEVICE: str = os.getenv("WHISPER_DEVICE", "cpu")  # cpu, cuda
+    MAX_AUDIO_FILE_SIZE: int = int(os.getenv("MAX_AUDIO_FILE_SIZE", "52428800"))  # 50MB
+    # 默认支持的音频容器/编码格式（以逗号分隔）
+    # 说明：iOS/iPad 上通过 MediaRecorder 往往产出 mp4 容器（audio/mp4），因此加入 mp4
+    #       Chrome/部分设备可能产出 webm（audio/webm），因此加入 webm
+    SUPPORTED_AUDIO_FORMATS: str = os.getenv("SUPPORTED_AUDIO_FORMATS", "mp3,wav,m4a,flac,ogg,aac,mp4,webm")
+    
+    # 当前使用的AI服务
+    CURRENT_AI_SERVICE: str = os.getenv("CURRENT_AI_SERVICE", "gemini")  # gemini 或 kimi
 
     class Config:
         case_sensitive = True
